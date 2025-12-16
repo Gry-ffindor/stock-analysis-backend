@@ -35,37 +35,65 @@ def get_financial_summary(stock_name:str):
     """
     Get the financial summary of the stock
     """
-    stock = yf.Ticker(stock_name)
-    info = stock.info
+    try:
+        stock = yf.Ticker(stock_name)
+        info = stock.info
 
-    # Get current price with fallback options
-    current_price = info.get('currentPrice') or info.get('regularMarketPrice') or info.get('previousClose')
+        # Get current price with multiple fallback options
+        current_price = (
+            info.get('currentPrice') or
+            info.get('regularMarketPrice') or
+            info.get('regularMarketPreviousClose') or
+            info.get('previousClose') or
+            info.get('open')
+        )
 
-    # Get market cap with formatting
-    market_cap = info.get('marketCap')
-    if market_cap:
-        # Format market cap in crores for Indian stocks
-        market_cap = f"{market_cap / 10000000:.2f} Cr"
+        # Get market cap with formatting
+        market_cap = info.get('marketCap')
+        if market_cap and market_cap != 0:
+            # Format market cap in crores for Indian stocks
+            market_cap = f"₹{market_cap / 10000000:.2f} Cr"
+        else:
+            market_cap = None
 
-    # Get PE ratio
-    pe_ratio = info.get('trailingPE') or info.get('forwardPE')
-    if pe_ratio:
-        pe_ratio = f"{pe_ratio:.2f}"
+        # Get PE ratio with fallbacks
+        pe_ratio = info.get('trailingPE') or info.get('forwardPE')
+        if pe_ratio and pe_ratio > 0:
+            pe_ratio = f"{pe_ratio:.2f}"
+        else:
+            pe_ratio = None
 
-    # Get dividend yield
-    dividend_yield = info.get('dividendYield')
-    if dividend_yield:
-        dividend_yield = f"{dividend_yield * 100:.2f}%"
+        # Get dividend yield
+        dividend_yield = info.get('dividendYield')
+        if dividend_yield and dividend_yield > 0:
+            dividend_yield = f"{dividend_yield * 100:.2f}%"
+        else:
+            dividend_yield = None
 
-    return {
-        "stock_name": stock_name,
-        "price": current_price,
-        "market_cap": market_cap,
-        "PE_ratio": pe_ratio,
-        "dividend_yield": dividend_yield,
-        "52_week_high": info.get('fiftyTwoWeekHigh'),
-        "52_week_low": info.get('fiftyTwoWeekLow'),
-    }
+        # Get 52 week high/low
+        week_52_high = info.get('fiftyTwoWeekHigh')
+        week_52_low = info.get('fiftyTwoWeekLow')
+
+        return {
+            "stock_name": stock_name,
+            "price": current_price,
+            "market_cap": market_cap,
+            "PE_ratio": pe_ratio,
+            "dividend_yield": dividend_yield,
+            "52_week_high": week_52_high,
+            "52_week_low": week_52_low,
+        }
+    except Exception as e:
+        print(f"Error in get_financial_summary for {stock_name}: {str(e)}")
+        return {
+            "stock_name": stock_name,
+            "price": None,
+            "market_cap": None,
+            "PE_ratio": None,
+            "dividend_yield": None,
+            "52_week_high": None,
+            "52_week_low": None,
+        }
 
 def get_historical_data(stock_name: str, period: str = "3mo"):
     """

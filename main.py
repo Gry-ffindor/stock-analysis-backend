@@ -62,19 +62,23 @@ async def analyze_stock(request: StockRequest):
         try:
             financial_data = get_financial_summary(stock_symbol)
             market_data = {
-                "current_price": financial_data.get('price', 'N/A'),
-                "market_cap": financial_data.get('market_cap', 'N/A'),
-                "pe_ratio": financial_data.get('PE_ratio', 'N/A'),
-                "52_week_high": financial_data.get('52_week_high', 'N/A'),
-                "52_week_low": financial_data.get('52_week_low', 'N/A'),
-                "dividend_yield": financial_data.get('dividend_yield', 'N/A'),
+                "current_price": financial_data.get('price') or 'N/A',
+                "market_cap": financial_data.get('market_cap') or 'N/A',
+                "pe_ratio": financial_data.get('PE_ratio') or 'N/A',
+                "52_week_high": financial_data.get('52_week_high') or 'N/A',
+                "52_week_low": financial_data.get('52_week_low') or 'N/A',
+                "dividend_yield": financial_data.get('dividend_yield') or 'N/A',
             }
         except Exception as e:
             print(f"Error fetching financial data: {str(e)}")
+            traceback.print_exc()
             market_data = {
                 "current_price": 'N/A',
                 "market_cap": 'N/A',
-                "pe_ratio": 'N/A'
+                "pe_ratio": 'N/A',
+                "52_week_high": 'N/A',
+                "52_week_low": 'N/A',
+                "dividend_yield": 'N/A',
             }
 
         # Fetch historical data for candlestick chart (1 year for all filter options)
