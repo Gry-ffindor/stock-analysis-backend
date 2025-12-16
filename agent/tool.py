@@ -39,6 +39,28 @@ def get_financial_summary(stock_name:str):
         stock = yf.Ticker(stock_name)
         info = stock.info
 
+        # If info is empty or minimal, try getting data from history
+        if not info or len(info) < 5:
+            hist = stock.history(period="5d")
+            if not hist.empty:
+                current_price = float(hist['Close'].iloc[-1])
+                week_52_high = float(hist['High'].max())
+                week_52_low = float(hist['Low'].min())
+            else:
+                current_price = None
+                week_52_high = None
+                week_52_low = None
+
+            return {
+                "stock_name": stock_name,
+                "price": current_price,
+                "market_cap": None,
+                "PE_ratio": None,
+                "dividend_yield": None,
+                "52_week_high": week_52_high,
+                "52_week_low": week_52_low,
+            }
+
         # Get current price with multiple fallback options
         current_price = (
             info.get('currentPrice') or
@@ -47,6 +69,12 @@ def get_financial_summary(stock_name:str):
             info.get('previousClose') or
             info.get('open')
         )
+
+        # If still no price, try from history
+        if not current_price:
+            hist = stock.history(period="1d")
+            if not hist.empty:
+                current_price = float(hist['Close'].iloc[-1])
 
         # Get market cap with formatting
         market_cap = info.get('marketCap')
@@ -74,6 +102,13 @@ def get_financial_summary(stock_name:str):
         week_52_high = info.get('fiftyTwoWeekHigh')
         week_52_low = info.get('fiftyTwoWeekLow')
 
+        # If 52 week high/low not available, calculate from history
+        if not week_52_high or not week_52_low:
+            hist = stock.history(period="1y")
+            if not hist.empty:
+                week_52_high = float(hist['High'].max()) if not week_52_high else week_52_high
+                week_52_low = float(hist['Low'].min()) if not week_52_low else week_52_low
+
         return {
             "stock_name": stock_name,
             "price": current_price,
@@ -85,6 +120,8 @@ def get_financial_summary(stock_name:str):
         }
     except Exception as e:
         print(f"Error in get_financial_summary for {stock_name}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {
             "stock_name": stock_name,
             "price": None,
