@@ -56,7 +56,6 @@ async def analyze_stock(request: StockRequest):
         result = agent_app.invoke(initial_state)
 
         # Get the stock symbol from agent result
-        stock_symbol = result.get('stock_symobol', request.stock_name)
         stock_symbol = result.get('stock_symbol', request.stock_name)
 
         # Get financial data using yfinance

@@ -11,7 +11,7 @@ load_dotenv()
 
 class AgentState(TypedDict):
     stock_name: str
-    stock_symobol: str
+    stock_symbol: str
     messages: Annotated[list, operator.add]
     web_search_results: str
     money_control_data:str
@@ -44,7 +44,7 @@ def identify_stock(state: AgentState):
     symbol = response.content.strip()
 
     return {
-        "stock_symobol": symbol
+        "stock_symbol": symbol
     }
 
 #node2 news serach
@@ -56,7 +56,7 @@ def news_search(state: AgentState):
     tools = [web_search(), money_control_scrap, get_financial_summary]
     llm_with_tools = llm.bind_tools(tools)
 
-    prompt = f"Search for news about {state['stock_symobol']} stock in indian markets and get money control data"
+    prompt = f"Search for news about {state['stock_symbol']} stock in indian markets and get money control data"
     result = llm_with_tools.invoke(prompt)
 
     return {
@@ -72,7 +72,7 @@ def money_control_scrapper(state: AgentState):
     return the stock details , price, change, market cap, PE ratio, etc.
     """
     money_control_tool = money_control_scrap()
-    result = money_control_tool.invoke(state["stock_symobol"])
+    result = money_control_tool.invoke(state["stock_symbol"])
     return {
         "money_control_data": result
         }    
@@ -102,7 +102,7 @@ def financial_analysis(state: AgentState):
     # Limit the search results to avoid token limits
     search_data = state.get('web_search_results', '')[:5000]
 
-    prompt = f"""Analyze the following information about {state['stock_symobol']} stock and return your analysis in JSON format.
+    prompt = f"""Analyze the following information about {state['stock_symbol']} stock and return your analysis in JSON format.
 
 Search Results: {search_data}
 
