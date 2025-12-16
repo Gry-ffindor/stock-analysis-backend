@@ -1,13 +1,8 @@
-# backend/main.py
 from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
-import sys
 import traceback
-
-# Add the project root directory to sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agent.agent import app as agent_app
 from agent.tool import get_financial_summary, get_historical_data, get_company_financials
@@ -16,9 +11,13 @@ from agent.tool import get_financial_summary, get_historical_data, get_company_f
 app = FastAPI(title="Stock Analysis API")
 
 # Enable CORS for frontend
+# Get allowed origins from environment variable or use defaults
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
