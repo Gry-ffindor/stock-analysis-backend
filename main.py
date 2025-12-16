@@ -13,12 +13,19 @@ app = FastAPI(title="Stock Analysis API")
 # Enable CORS for frontend
 # Get allowed origins from environment variable or use defaults
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+
+# Handle wildcard for all origins or specific origins
+if allowed_origins_str.strip() == "*":
+    allowed_origins = ["*"]
+    allow_credentials = False  # Cannot use credentials with wildcard origin
+else:
+    allowed_origins = [origin.strip() for origin in allowed_origins_str.split(",")]
+    allow_credentials = True
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
