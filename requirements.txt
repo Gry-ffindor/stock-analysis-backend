@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+langchain
+langchain-google-genai
+langchain-community
+langgraph
+python-dotenv
+requests
+beautifulsoup4
+yfinance
+pandas
+tavily-python
